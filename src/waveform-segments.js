@@ -179,6 +179,119 @@ define([
    * @returns {Array<Segment>}
    */
 
+   WaveformSegments.prototype.getOrderedSegments = function () {
+    var segments = this._segments.sort(function (a, b) {
+      return a.startTime - b.startTime;
+    });
+    return segments;
+  }
+
+    /**
+   * Returns the next segment.
+   *
+   * @returns {Segment}
+   * @returns {Segment}
+   */
+
+    WaveformSegments.prototype.getNext = function (segment) {
+
+      var segments = this.getOrderedSegments();
+      var _id = -1;
+      for (var i = 0; i < segments.length; i++) {
+        if (segment.endTime <= segments[i].startTime) {
+          _id = i;
+          break;
+        }
+      }
+      if (_id === -1)
+        return null;
+
+      return segments[_id];
+    };
+
+    /**
+  * Returns the previous segment.
+  *
+  * @returns {Segment}
+  */
+
+    WaveformSegments.prototype.getPrev = function (segment) {
+
+      var segments = this.getOrderedSegments();
+      var _id = -1;
+      for (var i = segments.length - 1; i >= 0; i--) {
+        if (segment.startTime >= segments[i].endTime) {
+          _id = i;
+          break;
+        }
+      }
+      if (_id === -1)
+        return null;
+
+      return segments[_id];
+    };
+
+
+    /**
+   * Merges the current segment with the next one.
+   *
+   * @returns {boolean}
+   */
+
+    WaveformSegments.prototype.mergeNext = function (segment) {
+
+      var _segment = this.getNext(segment);
+      if (!_segment)
+        return false;
+
+      segment.update({ endTime: _segment.endTime });
+      this.removeById(_segment.id);
+
+      return true;
+    };
+
+    /**
+   * Split a segment in two parts.
+   *
+   * @returns {boolean}
+   */
+
+    WaveformSegments.prototype.split = function (segment, time) {
+
+      if (segment.startTime > time || segment.endTime < time)
+        return false;
+
+      this.add({
+        startTime: time,
+        endTime: segment.endTime,
+        editable: segment.editable,
+        color: segment.color,
+        labelText: segment.labelText
+      });
+
+      segment.update({ endTime: time });
+
+      return true;
+    };
+
+    /**
+   * Merges the current segment with the next one.
+   *
+   * @returns {boolean}
+   */
+
+    WaveformSegments.prototype.mergePrev = function (segment) {
+
+      var _segment = this.getPrev(segment);
+      if (!_segment)
+        return false;
+
+      segment.update({ startTime: _segment.startTime });
+      this.removeById(_segment.id);
+
+      return true;
+    };
+
   WaveformSegments.prototype.getSegmentsAtTime = function(time) {
     return this._segments.filter(function(segment) {
       return time >= segment.startTime && time < segment.endTime;

@@ -3,6 +3,9 @@
  * @author Evan Louie <evan.louie@microsoft.com> (https://evanlouie.com)
  */
 
+//BUILD options
+//  "postbuild": "copyfiles peaks.js peaks.js.map demo",
+//   "prebuild": "npm run lint",
 declare module 'peaks.js' {
   interface SegmentAddOptions {
     startTime: number;
@@ -315,6 +318,7 @@ declare module 'peaks.js' {
       getDuration: () => number;
       seek: (time: number) => void;
       playSegment: (segment: Segment) => void;
+      playSegmentFromHead: (segment: Segment) => void;
     };
     /** Views API */
     views: {
@@ -336,6 +340,13 @@ declare module 'peaks.js' {
       add: (segments: SegmentAddOptions | SegmentAddOptions[]) => void;
       getSegments: () => Segment[];
       getSegment: (id: string) => Segment | null;
+      /** Custom Code */
+      getNext: (segment: Segment) => Segment;
+      getPrev: (segment: Segment) => Segment;
+      mergeNext: (segment: Segment) => boolean;
+      mergePrev: (segment: Segment) => boolean;
+      split: (segment: Segment, time: number) => boolean;
+      /** Custom Code */
       removeByTime: (startTime: number, endTime?: number) => Segment[];
       removeById: (segmentId: string) => Segment[];
       removeAll: () => void;

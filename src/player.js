@@ -204,5 +204,43 @@ define([
     };
   }
 
+    /**
+   * Plays the given segment From playhead.
+   *
+   * @param {Segment} segment The segment denoting the time region to play.
+   */
+
+      Player.prototype.playSegmentFromHead = function(segment) {
+      var self = this;
+
+      if (!segment ||
+        !Utils.isValidTime(segment.startTime) ||
+        !Utils.isValidTime(segment.endTime)) {
+        self._peaks.logger('peaks.player.playSegment(): parameter must be a segment object');
+        return;
+      }
+
+      clearTimeout(self._interval);
+      self._interval = null;
+
+      // Set audio time to segment start time
+      if (self.getCurrentTime() < segment.startTime || self.getCurrentTime() > segment.endTime) {
+        self.seek(segment.startTime);
+      }
+
+      // Start playing audio
+      self.play();
+
+      // We need to use setInterval here as the timeupdate event doesn't fire
+      // often enough.
+      self._interval = setInterval(function() {
+        if (self.getCurrentTime() >= segment.endTime || !self.isPlaying()) {
+          clearTimeout(self._interval);
+          self._interval = null;
+          self.pause();
+        }
+      }, 30);
+    };
+
   return Player;
 });
